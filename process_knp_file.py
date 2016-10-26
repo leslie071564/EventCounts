@@ -28,7 +28,7 @@ def print_events(knp_file, to_file, if_debug=False, print_sid=False):
                 result = knp.result(data.decode('utf-8'))
                 events_of_sent = process_sent(result)
                 if now_sid:
-                    events_of_sent = ["%s %s" % (x, now_sid) for x in events_of_sent]
+                    events_of_sent = ["1 %s %s" % (x, now_sid) for x in events_of_sent]
                 for ev in events_of_sent:
                     TO_FILE.write(ev.encode('utf-8') + '\n')
             except :
@@ -54,8 +54,8 @@ def process_sent(result):
             continue
         pred = result.tag_list()[tag.parent_id]
         # check if OK.
-        #if u"<用言:動>" not in pred.fstring:
-        #    continue
+        if u"<用言:動>" not in pred.fstring:
+            continue
         prev_tag = result.tag_list()[tag_id - 1] if tag_id else None
         arg = get_noun_rep(tag, prev_tag)
         if arg:

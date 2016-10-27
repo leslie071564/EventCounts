@@ -6,6 +6,7 @@ import os.path
 cdb_base_dir = "/pear/share/www-uniq/v2006-2015.text-cdb"
 
 def get_sentence(sid):
+    sid = sid.split(':')[-1]
     sub_dirs = sid.split('-')
     if sub_dirs[0] == "w201103":
         if sub_dirs[1] == "":
@@ -24,8 +25,22 @@ def get_sentence(sid):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', "--sid", action="store", dest="sid")
+    parser.add_argument('-s', "--sids", action="store", default="", dest="sids")
+    parser.add_argument('-f', "--file", action="store", dest="file")
     options = parser.parse_args() 
 
-    print get_sentence(options.sid)
+    tmp = []
+    if options.file:
+        with open(options.file) as f:
+            for line in f:
+                sentence = get_sentence(line.strip())
+                if sentence:
+                    tmp.append(sentence)
+
+    if options.sids:
+        for sid in options.sids.split(','):
+            sentence = get_sentence(sid)
+            if sentence:
+                tmp.append(sentence)
+    print "<br>".join(tmp)
 

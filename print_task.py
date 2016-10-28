@@ -3,14 +3,27 @@ import sys
 import argparse
 import os.path
 
+import ConfigParser
+
+def set_arguments(config_file):
+    config = ConfigParser.RawConfigParser()
+    config.read(config_file)
+
+    global extract_script, merge_script, raw_dir, result_dir, merge_dir, sort_tmp_dir
+    extract_script = config.get("Scripts", "extract_script") 
+    merge_script = config.get("Scripts", "merge_script") 
+    raw_dir = config.get("Data_Directory", "raw_dir") 
+    result_dir = config.get("Data_Directory", "result_dir") 
+    merge_dir = config.get("Data_Directory", "merge_dir")
+    sort_tmp_dir = config.get("Sorting", "sort_tmp_dir")
+
+
 def check_existence(folder_stamp, file_stamp):
-    base_dir = "/pear/share/www-uniq/v2006-2015.cf-preparation/knp"
-    check_file = "%s/%s/%s%s.knp.xz" % (base_dir, '/'.join(folder_stamp), folder_stamp, file_stamp)
+    check_file = "%s/%s/%s%s.knp.xz" % (raw_dir, '/'.join(folder_stamp), folder_stamp, file_stamp)
     return os.path.isfile(check_file)
 
 def print_event_extract_task(output_file):
     f = open(output_file, 'w')
-    extract_script = "/home/huang/work/EventCounts/count_events.sh"
     for folder_num in range(4905):
         folder_stamp = "%04d" % folder_num
         for file_num in range(100):
@@ -23,18 +36,26 @@ def print_event_extract_task(output_file):
 
 def print_merge_task(output_file):
     f = open(output_file, 'w')
-    merge_script = "/home/huang/work/EventCounts/merge.py"
-    result_dir = "/windroot/huang/EventCounts"
-    merge_dir = "/windroot/huang/MergeEvent"
     for folder_num in range(4905):
         folder_stamp = "%04d" % folder_num
         result_prefix = "%s/%s" % (result_dir, folder_stamp)
         merge_prefix = "%s/%s" % (merge_dir, folder_stamp)
-        #sort_cmd = "sort -k2 --parallel=10 %s_*_result.txt > %s_sorted.txt" % (result_prefix, merge_prefix)
-        sort_cmd = "sort -k2 %s_*_result.txt > %s_sorted.txt" % (result_prefix, merge_prefix)
+        sort_cmd = "sort --temporary-directory=%s -k2 %s_*_result.txt > %s_sorted.txt" % (sort_tmp_dir, result_prefix, merge_prefix)
         merge_cmd = "python %s -f %s_sorted.txt -s > %s_result.txt" % (merge_script, merge_prefix, merge_prefix)
-        delete_sorted_cmd = "rm -rf %s_sorted.txt" % (merge_prefix)
+        delete_sorted_cmd = "rm -f %s_sorted.txt" % (merge_prefix)
         echo_cmd = "echo finish %s" % folder_stamp
+        cmd = "%s && %s && %s && %s" % (sort_cmd, merge_cmd, delete_sorted_cmd, echo_cmd)
+        f.write(cmd + '\n')
+
+def print_merge_group_task(output_file):
+    f = open(output_file, 'w')
+    for folder_group in range(50):
+        folder_group_stamp = "%02d" % (folder_group)
+        merge_prefix = "%s/%s" % (merge_dir, folder_group_stamp)
+        sort_cmd = "sort --temporary-directory=%s -k2 -m %s*_result.txt > %s_sorted.txt" % (sort_tmp_dir, merge_prefix, merge_prefix)
+        merge_cmd = "python %s -f %s_sorted.txt -s > %s_result_group.txt" % (merge_script, merge_prefix, merge_prefix)
+        delete_sorted_cmd = "rm -f %s_sorted.txt" % (merge_prefix)
+        echo_cmd = "echo finish %s" % folder_group_stamp
         cmd = "%s && %s && %s && %s" % (sort_cmd, merge_cmd, delete_sorted_cmd, echo_cmd)
         f.write(cmd + '\n')
 
@@ -42,9 +63,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', "--event_extract_task_file", action="store", default="", dest="event_extract_task_file")
     parser.add_argument('-m', "--merge_task_file", action="store", default="", dest="merge_task_file")
+    parser.add_argument('-g', "--merge_group_task_file", action="store", default="", dest="merge_group_task_file")
+    parser.add_argument('--setting_file', action="store", default="./setting.ini", dest="setting_file")
     options = parser.parse_args() 
+
+    set_arguments(options.setting_file) 
 
     if options.event_extract_task_file:
         print_event_extract_task(options.event_extract_task_file)
     if options.merge_task_file:
         print_merge_task(options.merge_task_file)
+    if options.merge_group_task_file:
+        print_merge_group_task(options.merge_group_task_file)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import random
 import argparse
 import cdb
 import os.path
@@ -27,20 +28,37 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', "--sids", action="store", default="", dest="sids")
     parser.add_argument('-f', "--file", action="store", dest="file")
+    parser.add_argument('-t', "--total_n", action="store", type=int, default=0, dest="total_n")
+    parser.add_argument('-n', "--sample_n", action="store", type=int, default=0, dest="sample_n")
     options = parser.parse_args() 
 
-    tmp = []
+    which = []
+    if options.total_n and options.sample_n:
+        which = random.sample(range(options.total_n), options.sample_n)
+
+    count = 0
+    return_sentences = []
     if options.file:
         with open(options.file) as f:
             for line in f:
-                sentence = get_sentence(line.strip())
-                if sentence:
-                    tmp.append(sentence)
+                if which == [] or count in which:
+                    sentence = get_sentence(line.strip())
+                    if sentence:
+                        return_sentences.append(sentence)
+                count += 1
 
     if options.sids:
         for sid in options.sids.split(','):
-            sentence = get_sentence(sid)
-            if sentence:
-                tmp.append(sentence)
-    print "<br>".join(tmp)
+            # fix this.
+            if sid == '':
+                continue
+            # fix this.
+            if which == [] or count in which:
+                sentence = get_sentence(sid)
+                if sentence:
+                    return_sentences.append(sentence)
+            count += 1
+
+    print "<br>".join(return_sentences)
+    #print "\n".join(return_sentences)
 

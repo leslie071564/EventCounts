@@ -30,11 +30,11 @@ def merge_sid_file(file_loc, threshold=0):
         for line in FILE:
             line_count, line_ev, line_sids = line.strip().split(' ')
             line_count = int(line_count)
-            if not now_ev:
-                now_ev = line_ev
-                now_count = line_count
-                now_sids = line_sids
-            elif now_ev == line_ev:
+            #if not now_ev:
+               # now_ev = line_ev
+                #now_count = line_count
+               # now_sids = line_sids
+            if now_ev == line_ev:
                 now_count += line_count
                 now_sids += (',' + line_sids)
             else:

@@ -9,9 +9,10 @@ def set_arguments(config_file):
     config = ConfigParser.RawConfigParser()
     config.read(config_file)
 
-    global extract_script, merge_script, raw_dir, result_dir, merge_dir, sort_tmp_dir
+    global extract_script, merge_script, clean_script, raw_dir, result_dir, merge_dir, sort_tmp_dir
     extract_script = config.get("Scripts", "extract_script") 
     merge_script = config.get("Scripts", "merge_script") 
+    clean_script = config.get("Scripts", "clean_script")
     raw_dir = config.get("Data_Directory", "raw_dir") 
     result_dir = config.get("Data_Directory", "result_dir") 
     merge_dir = config.get("Data_Directory", "merge_dir")
@@ -40,7 +41,7 @@ def print_merge_task(output_file):
         folder_stamp = "%04d" % folder_num
         result_prefix = "%s/%s" % (result_dir, folder_stamp)
         merge_prefix = "%s/%s" % (merge_dir, folder_stamp)
-        sort_cmd = "sort --temporary-directory=%s -k2 %s_*_result.txt > %s_sorted.txt" % (sort_tmp_dir, result_prefix, merge_prefix)
+        sort_cmd = "LC_ALL=C sort --temporary-directory=%s -k2 %s_*_result.txt > %s_sorted.txt" % (sort_tmp_dir, result_prefix, merge_prefix)
         merge_cmd = "python %s -f %s_sorted.txt -s > %s_result.txt" % (merge_script, merge_prefix, merge_prefix)
         delete_sorted_cmd = "rm -f %s_sorted.txt" % (merge_prefix)
         echo_cmd = "echo finish %s" % folder_stamp
@@ -52,11 +53,12 @@ def print_merge_group_task(output_file):
     for folder_group in range(50):
         folder_group_stamp = "%02d" % (folder_group)
         merge_prefix = "%s/%s" % (merge_dir, folder_group_stamp)
-        sort_cmd = "sort --temporary-directory=%s -k2 -m %s*_result.txt > %s_sorted.txt" % (sort_tmp_dir, merge_prefix, merge_prefix)
+        sort_cmd = "LC_ALL sort --temporary-directory=%s -k2 -m %s*_result.txt > %s_sorted.txt" % (sort_tmp_dir, merge_prefix, merge_prefix)
         merge_cmd = "python %s -f %s_sorted.txt -s > %s_result_group.txt" % (merge_script, merge_prefix, merge_prefix)
+        clean_cmp = "%s %s_result_group.txt" % (clean_script, merge_prefix)
         delete_sorted_cmd = "rm -f %s_sorted.txt" % (merge_prefix)
         echo_cmd = "echo finish %s" % folder_group_stamp
-        cmd = "%s && %s && %s && %s" % (sort_cmd, merge_cmd, delete_sorted_cmd, echo_cmd)
+        cmd = "%s && %s && %s && %s && %s" % (sort_cmd, merge_cmd, clean_cmp, delete_sorted_cmd, echo_cmd)
         f.write(cmd + '\n')
 
 if __name__ == "__main__":

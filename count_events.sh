@@ -31,7 +31,7 @@ result_file=/windroot/huang/EventCounts/"$file_stamp"_result.txt
 process_file_script=/home/huang/work/EventCounts/process_knp_file.py
 merge_script=/home/huang/work/EventCounts/merge.py
 $NICE python $process_file_script -i $knp_file -o $output_file -s
-$NICE sort -k2 $output_file -o $output_file
+$NICE LC_ALL=C sort -k2 $output_file -o $output_file
 $NICE python $merge_script -t 2 -f $output_file -s > $result_file
 
 # remove temp files.

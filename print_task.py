@@ -2,7 +2,6 @@
 import sys
 import argparse
 import os.path
-
 import ConfigParser
 
 def set_arguments(config_file):

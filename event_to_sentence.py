@@ -35,26 +35,23 @@ def sid_to_sentence(sid):
     return c[sid]
 
 def event_to_sentences(ev, n=False):
-    ev_sid_cdb = CDB_Reader(event_to_sids_keymap)
     ev_count_cdb = CDB_Reader(event_to_count_keymap)
+    ev_sid_cdb = CDB_Reader(event_to_sids_keymap)
     count = ev_count_cdb.get(ev)
     sids = ev_sid_cdb.get(ev)
     if not count or not sids:
         return None
     
     count = int(count)
-    which = []
+    sids = sids.split(',')
     if n and n < count:
-        which = random.sample(range(count), n)
+        sids = random.sample(sids, n)
     
     return_sentences = []
-    x = 0
-    for sid in sids.split(','):
-        if which == [] or x in which:
-            sent = sid_to_sentence(sid)
-            if sent != None:
-                return_sentences.append(sent)
-        x += 1
+    for sid in sids:
+        sent = sid_to_sentence(sid)
+        if sent != None:
+            return_sentences.append(sent)
     return return_sentences
 
 

@@ -15,7 +15,7 @@ def set_arguments(config_file):
     raw_dir = config.get("Data_Directory", "raw_dir") 
     result_dir = config.get("Data_Directory", "result_dir") 
     merge_dir = config.get("Data_Directory", "merge_dir")
-    sort_tmp_dir = config.get("Sorting", "sort_tmp_dir")
+    sort_tmp_dir = config.get("Data_Directory", "sort_tmp_dir")
 
 
 def check_existence(folder_stamp, file_stamp):

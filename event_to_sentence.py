@@ -34,7 +34,7 @@ def sid_to_sentence(sid):
     c = cdb.init(which_cdb)
     return c[sid]
 
-def event_to_sentences(ev, n=False):
+def event_to_sentences(ev, n=False, print_sent=False):
     ev_count_cdb = CDB_Reader(event_to_count_keymap)
     ev_sid_cdb = CDB_Reader(event_to_sids_keymap)
     count = ev_count_cdb.get(ev)
@@ -50,7 +50,11 @@ def event_to_sentences(ev, n=False):
     return_sentences = []
     for sid in sids:
         sent = sid_to_sentence(sid)
-        if sent != None:
+        if sent == None:
+            continue
+        if print_sent:
+            print sent
+        else:
             return_sentences.append(sent)
     return return_sentences
 
@@ -65,12 +69,12 @@ if __name__ == "__main__":
 
     set_arguments(options.setting_file) 
 
-    sentences = event_to_sentences(options.event, n=options.sample_n)
-    if sentences == None:
-        print "No sentence found."
-        sys.exit()
     if options.html:
-        print "<br>".join(sentences)
+        sentences = event_to_sentences(options.event, n=options.sample_n, print_sent=False)
+        if sentences == None:
+            print "No sentence found."
+        else:
+            print "<br>".join(sentences)
     else:
-        print "\n".join(sentences)
+        sentences = event_to_sentences(options.event, n=options.sample_n, print_sent=True)
 

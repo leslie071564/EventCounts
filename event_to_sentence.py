@@ -6,6 +6,9 @@ import cdb
 from CDB_Reader import CDB_Reader
 import os.path
 import ConfigParser
+###
+existed_db_setting = "/windroot/huang/EventCounts_20161030/setting.ini"
+###
 
 def set_arguments(config_file):
     config = ConfigParser.RawConfigParser()
@@ -64,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument('-e', "--event", action="store", dest="event")
     parser.add_argument('-n', "--sample_n", action="store", type=int, default=False, dest="sample_n")
     parser.add_argument('-b', "--html", action="store_true", default=False, dest="html")
-    parser.add_argument('--setting_file', action="store", default="./setting.ini", dest="setting_file")
+    parser.add_argument('--setting_file', action="store", default=existed_db_setting, dest="setting_file")
     options = parser.parse_args() 
 
     set_arguments(options.setting_file) 

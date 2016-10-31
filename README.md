@@ -8,11 +8,11 @@
 ## Extract original sentences given event strings:
 #### ex: (print 5 random sentences containing event "切手/きって-ヲ-貼る/はる")
 ```
-        python event_to_sentence.py -e 切手/きって-ヲ-貼る/はる -n 5
+    python event_to_sentence.py -e 切手/きって-ヲ-貼る/はる -n 5
 ```
 #### ex: (print all sentences containing event "切手/きって-ヲ-貼る/はる")
 ```
-        python event_to_sentence.py -e 切手/きって-ヲ-貼る/はる
+    python event_to_sentence.py -e 切手/きって-ヲ-貼る/はる
 ```
 
 ## Build Event-count databases:

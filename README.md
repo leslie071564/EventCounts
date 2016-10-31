@@ -1,16 +1,16 @@
 ## Prerequisite:
-    CDB_Writer module
-    CDB_Reader module
+    #### CDB_Writer module
+    #### CDB_Reader module
 ```
     git clone git@github.com:leslie071564/CDB_handler.git
 ```
     
 ## Extract original sentences given event strings:
-    ex: (print 5 random sentences containing event "切手/きって-ヲ-貼る/はる")
+    #### ex: (print 5 random sentences containing event "切手/きって-ヲ-貼る/はる")
 ```
         python event_to_sentence.py -e 切手/きって-ヲ-貼る/はる -n 5
 ```
-    ex: (print all sentences containing event "切手/きって-ヲ-貼る/はる")
+    #### ex: (print all sentences containing event "切手/きって-ヲ-貼る/はる")
 ```
         python event_to_sentence.py -e 切手/きって-ヲ-貼る/はる
 ```

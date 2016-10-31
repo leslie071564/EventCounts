@@ -37,18 +37,27 @@ def sid_to_sentence(sid):
     c = cdb.init(which_cdb)
     return c[sid]
 
-def event_to_sentences(ev, n=False, print_sent=False):
+def events_to_sentences(evs, n=False, print_sent=False):
     ev_count_cdb = CDB_Reader(event_to_count_keymap)
     ev_sid_cdb = CDB_Reader(event_to_sids_keymap)
-    count = ev_count_cdb.get(ev)
-    sids = ev_sid_cdb.get(ev)
-    if not count or not sids:
-        return None
-    
-    count = int(count)
-    sids = sids.split(',')
+
+    evs = evs.split("##")
+    all_sids = set()
+    for ev in evs:
+        ev_count = ev_count_cdb.get(ev)
+        ev_sids = ev_sid_cdb.get(ev)
+        if not ev_count or not ev_sids:
+            return None
+        ev_sids = ev_sids.split(',')
+        if all_sids == set():
+            all_sids = set(ev_sids)
+        else:
+            all_sids = all_sids & set(ev_sids) 
+    count = len(all_sids)
+    print count
+
     if n and n < count:
-        sids = random.sample(sids, n)
+        sids = random.sample(all_sids, n)
     
     return_sentences = []
     for sid in sids:
@@ -61,7 +70,6 @@ def event_to_sentences(ev, n=False, print_sent=False):
             return_sentences.append(sent)
     return return_sentences
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', "--event", action="store", dest="event")
@@ -73,11 +81,11 @@ if __name__ == "__main__":
     set_arguments(options.setting_file) 
 
     if options.html:
-        sentences = event_to_sentences(options.event, n=options.sample_n, print_sent=False)
+        sentences = events_to_sentences(options.event, n=options.sample_n, print_sent=False)
         if sentences == None:
             print "No sentence found."
         else:
             print "<br>".join(sentences)
     else:
-        sentences = event_to_sentences(options.event, n=options.sample_n, print_sent=True)
+        sentences = events_to_sentences(options.event, n=options.sample_n, print_sent=True)
 

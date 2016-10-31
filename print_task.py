@@ -4,7 +4,9 @@ import argparse
 import os.path
 import ConfigParser
 
-def set_arguments(config_file):
+def set_arguments(setting_file):
+    global config_file
+    config_file = setting_file 
     config = ConfigParser.RawConfigParser()
     config.read(config_file)
 
@@ -29,7 +31,7 @@ def print_event_extract_task(output_file):
         for file_num in range(100):
             file_stamp = "%02d" % file_num
             if check_existence(folder_stamp, file_stamp):
-                cmd = "%s %s %s" % (extract_script, " ".join(list(folder_stamp)), file_stamp)
+                cmd = "%s %s %s %s" % (extract_script, " ".join(list(folder_stamp)), file_stamp, config_file)
                 f.write(cmd + '\n')
             if folder_num == 4904 and file_num == 24:
                 return None
@@ -65,10 +67,10 @@ if __name__ == "__main__":
     parser.add_argument('-e', "--event_extract_task_file", action="store", default="", dest="event_extract_task_file")
     parser.add_argument('-m', "--merge_task_file", action="store", default="", dest="merge_task_file")
     parser.add_argument('-g', "--merge_group_task_file", action="store", default="", dest="merge_group_task_file")
-    parser.add_argument('--setting_file', action="store", default="./setting.ini", dest="setting_file")
+    parser.add_argument('--config_file', action="store", default="./setting.ini", dest="config_file")
     options = parser.parse_args() 
 
-    set_arguments(options.setting_file) 
+    set_arguments(options.config_file) 
 
     if options.event_extract_task_file:
         print_event_extract_task(options.event_extract_task_file)

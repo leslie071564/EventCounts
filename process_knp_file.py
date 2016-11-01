@@ -94,7 +94,10 @@ def get_noun_rep(this_tag, prev_tag):
         this_repname[mrph_index] = replace_by_category(mrph)
         if flag:
             if u"<複合←>" in mrph.fstring or this_mrph.hinsi == u"接尾辞":
-                this_repname.insert(0, replace_by_category(prev_mrph))
+                prev_mrph_rep = replace_by_category(prev_mrph)
+                if not prev_mrph_rep:
+                    return None
+                this_repname.insert(0, prev_mrph_rep)
                 break
     return "+".join(this_repname)
 

@@ -58,6 +58,8 @@ def events_to_sentences(evs, n=False, print_sent=False):
 
     if n and n < count:
         sids = random.sample(all_sids, n)
+    else:
+        sids = all_sids
     
     return_sentences = []
     for sid in sids:

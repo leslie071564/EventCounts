@@ -54,7 +54,7 @@ def events_to_sentences(evs, n=False, print_sent=False):
         else:
             all_sids = all_sids & set(ev_sids) 
     count = len(all_sids)
-    print count
+    sys.stderr.write("%s\n" % count)
 
     if n and n < count:
         sids = random.sample(all_sids, n)

@@ -47,7 +47,7 @@ gxpc js -a work_file=merge_folder.task -a cpu_factor=0.5
 echo event files merged for all folders.
 
 python print_task.py --merge_group_task_file merge_group.task --config_file $config_file
-gxpc js -a work_file=merge_group.task -a cpu_factor=0.125
+gxpc js -a work_file=merge_group.task -a cpu_factor=0.25
 rm -f merge_folder.task merge_group.task
 echo event folders merged
 
@@ -69,4 +69,4 @@ rm -f $all_event_file
 echo "event-count file (sorted by counts) extracted at $all_event_sorted"
 
 ### delete low level files.
-rm -rf $result_dir $merge_dir
+#rm -rf $result_dir $merge_dir

@@ -42,7 +42,7 @@ def print_merge_task(output_file):
         folder_stamp = "%04d" % folder_num
         result_prefix = "%s/%s" % (result_dir, folder_stamp)
         merge_prefix = "%s/%s" % (merge_dir, folder_stamp)
-        sort_cmd = "LC_ALL=C sort --temporary-directory=%s -k2 %s_*_result.txt > %s_sorted.txt" % (sort_tmp_dir, result_prefix, merge_prefix)
+        sort_cmd = "sort --temporary-directory=%s -k2 %s_*_result.txt > %s_sorted.txt" % (sort_tmp_dir, result_prefix, merge_prefix)
         merge_cmd = "python %s -f %s_sorted.txt -s > %s_result.txt" % (merge_script, merge_prefix, merge_prefix)
         delete_sorted_cmd = "rm -f %s_sorted.txt" % (merge_prefix)
         echo_cmd = "echo finish %s" % folder_stamp
@@ -54,7 +54,7 @@ def print_merge_group_task(output_file):
     for folder_group in range(50):
         folder_group_stamp = "%02d" % (folder_group)
         merge_prefix = "%s/%s" % (merge_dir, folder_group_stamp)
-        sort_cmd = "LC_ALL sort --temporary-directory=%s -k2 -m %s*_result.txt > %s_sorted.txt" % (sort_tmp_dir, merge_prefix, merge_prefix)
+        sort_cmd = "sort --temporary-directory=%s -k2 -m %s*_result.txt > %s_sorted.txt" % (sort_tmp_dir, merge_prefix, merge_prefix)
         merge_cmd = "python %s -f %s_sorted.txt -s > %s_result_group.txt" % (merge_script, merge_prefix, merge_prefix)
         clean_cmp = "%s %s_result_group.txt" % (clean_script, merge_prefix)
         delete_sorted_cmd = "rm -f %s_sorted.txt" % (merge_prefix)

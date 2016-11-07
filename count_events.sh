@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+
 NICE="nice -n 19"
 export LC_ALL=C
 base_dir1="$1"

@@ -15,11 +15,11 @@ def merge_count_file(file_loc, threshold=0):
             if now_ev == line_ev:
                 now_count += line_count
             else:
-                if now_count >= threshold:
+                if now_count > threshold:
                     print "%s %s" % (now_count, now_ev)
                 now_ev = line_ev
                 now_count = line_count
-        if now_count >= threshold:
+        if now_count > threshold:
             print "%s %s" % (now_count, now_ev)
 
 def merge_sid_file(file_loc, threshold=0):
@@ -38,12 +38,12 @@ def merge_sid_file(file_loc, threshold=0):
                 now_count += line_count
                 now_sids += (',' + line_sids)
             else:
-                if now_count >= threshold:
+                if now_count > threshold:
                     print "%s %s %s" % (now_count, now_ev, now_sids)
                 now_ev = line_ev
                 now_count = line_count
                 now_sids = line_sids
-        if now_count >= threshold:
+        if now_count > threshold:
             print "%s %s %s" % (now_count, now_ev, now_sids)
 
 if __name__ == "__main__":

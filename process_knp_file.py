@@ -64,9 +64,11 @@ def process_sent(result, if_debug=False):
             pred_str = re.search(ur"<用言代表表記:(.*?)>", pred.fstring).group(1)
             event_rep = "%s-%s-%s" % (arg, case, pred_str)
             ALL_EVENTS.append(event_rep)
+    '''
     if if_debug and ALL_EVENTS:
         sys.stderr.write(print_original_sentence(result) + '\n')
         sys.stderr.write(" ".join(ALL_EVENTS) + '\n')
+    '''
     return ALL_EVENTS
 
 def print_original_sentence(result, delimiter=""):
@@ -78,10 +80,10 @@ def get_noun_rep(this_tag, prev_tag):
     this_repname = this_tag.repname.split('+')
     if not this_repname:
         return None
+
+    flag = False
     if len(this_repname) == 1 and len(this_repname[0].split('/')[0]) == 1:
         flag = True
-    else:
-        flag = False
     
     prev_mrph = prev_tag.mrph_list()[-1]
     for mrph in this_tag.mrph_list():
@@ -90,12 +92,15 @@ def get_noun_rep(this_tag, prev_tag):
             continue
         mrph_index = this_repname.index(mrph.repname)
         if mrph.hinsi == u"特殊":
+            sys.stderr.write(mrph.midasi)
             return None
         this_repname[mrph_index] = replace_by_category(mrph)
         if flag:
-            if u"<複合←>" in mrph.fstring or this_mrph.hinsi == u"接尾辞":
+            if u"<複合←>" in mrph.fstring or mrph.hinsi == u"接尾辞":
+            #if True:
                 prev_mrph_rep = replace_by_category(prev_mrph)
                 if not prev_mrph_rep:
+                    sys.stderr.write("%s %s\n" % (prev_mrph.midasi, mrph.midasi))
                     return None
                 this_repname.insert(0, prev_mrph_rep)
                 break

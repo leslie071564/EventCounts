@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 NICE="nice -n 19"
 export LC_ALL=C
 
@@ -47,12 +47,15 @@ gxpc js -a work_file=merge_folder.task -a cpu_factor=0.5
 echo event files merged for all folders.
 
 python print_task.py --merge_group_task_file merge_group.task --config_file $config_file
-gxpc js -a work_file=merge_group.task -a cpu_factor=0.25
+gxpc js -a work_file=merge_group.task -a cpu_factor=0.5
 rm -f merge_folder.task merge_group.task
 echo event folders merged
 
-all_event_file=/data/huang/all_sorted_$DATE.txt
-sort --parallel=10 --temporary-directory=/data/huang/tmp -k2 $merge_dir/*_result_group.txt > $all_event_file 
+tmp_dir=/data/$USER
+all_event_file=$tmp_dir/all_sorted_$DATE.txt
+tmp_file=$tmp_dir/tmp.txt
+sort --parallel=10 --temporary-directory=$sort_tmp_dir -k2 $merge_dir/*_result_group.txt > $tmp_file
+python ./merge.py -f $tmp_file -s > $all_event_file
 echo all events merged at $all_event_file
 
 ### Build event-cdbs:
@@ -65,7 +68,7 @@ echo event-sid cdb database built at $event_sid_cdbdir
 all_event_sorted=$exp_dir/all_events_counts_sorted.txt
 cut -d' ' -f1,2 $all_event_file > $all_event_sorted 
 sort --parallel=10 --temporary-directory=/data/huang/tmp -nr $all_event_sorted -o $all_event_sorted
-rm -f $all_event_file
+#rm -f $all_event_file
 echo "event-count file (sorted by counts) extracted at $all_event_sorted"
 
 ### delete low level files.

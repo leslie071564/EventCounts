@@ -5,6 +5,8 @@ import argparse
 import codecs
 
 def write_event_sid_db(input_file, db_file):
+    if db_file.endswith('.keymap'):
+        db_file = db_file.split('.keymap')[0]
     DEFAULTLFS = 2.5 * 1024 * 1024 * 1024
     keymap_file = db_file.split('/')[-1] + '.keymap'
     limit_file_size = DEFAULTLFS 
@@ -14,15 +16,24 @@ def write_event_sid_db(input_file, db_file):
     
     maker = CDB_Writer(db_file, keymap_file, limit_file_size, fetch, encoding_out)
     with open(input_file, 'r') as f:
-        #for l in iter(f.readline, ''):
         for l in f:
             count, ev, sids = l.strip().split(' ')
-            maker.add(ev.decode(encoding_in), sids)
+            try:
+                maker.add(ev.decode(encoding_in), sids)
+            except OverflowError:
+                sids = sids.split(',')
+                num = len(sids) / 500000
+                print ev, num
+                maker.add(ev.decode(encoding_in), str(num))
+                for n in xrange(num):
+                    maker.add("%s%s" % (ev.decode(encoding_in), n), ','.join(sids[n*500000:min((n+1)*500000, len(sids))]))
 
     del maker
 
 
 def write_event_count_db(input_file, db_file):
+    if db_file.endswith('.keymap'):
+        db_file = db_file.split('.keymap')[0]
     DEFAULTLFS = 2.5 * 1024 * 1024 * 1024
     keymap_file = db_file.split('/')[-1] + '.keymap'
     limit_file_size = DEFAULTLFS
@@ -33,7 +44,7 @@ def write_event_count_db(input_file, db_file):
     maker = CDB_Writer(db_file, keymap_file, limit_file_size, fetch, encoding_out)
     with open(input_file, 'r') as f:
         for l in f:
-            count, ev, sids = l.strip().split(' ')
+            count, ev = l.strip().split(' ')
             maker.add(ev.decode(encoding_in), count)
 
     del maker
@@ -41,12 +52,15 @@ def write_event_count_db(input_file, db_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--build_event_sid_db", action="store_true", default="", dest="build_event_sid_db")
+    parser.add_argument("--build_event_count_db", action="store_true", default="", dest="build_event_count_db")
+
     parser.add_argument('-i', "--input_file", action="store", default="", dest="input_file")
-    parser.add_argument('-s', "--event_sid", action="store", default="", dest="event_sid")
-    parser.add_argument('-c', "--event_count", action="store", default="", dest="event_count")
+    parser.add_argument('-o', "--cdb_prefix", action="store", default="", dest="cdb_prefix")
     options = parser.parse_args() 
 
-    if options.event_sid:
-        write_event_sid_db(options.input_file, options.event_sid)
-    if options.event_count:
-        write_event_count_db(options.input_file, options.event_count)
+    if options.build_event_sid_db:
+        write_event_sid_db(options.input_file, options.cdb_prefix)
+
+    elif options.build_event_count_db:
+        write_event_count_db(options.input_file, options.cdb_prefix)

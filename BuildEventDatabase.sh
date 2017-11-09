@@ -2,74 +2,63 @@
 NICE="nice -n 19"
 export LC_ALL=C
 
-DATE=$(date +"%Y%m%d")
+result_dir="$1"
+mkdir -p $result_dir
 
-### set config file by curent date.
+# generate config files.
+config_file="$result_dir/config.sh"
+python write_config.py "$@" --output_fn $config_file
+source $config_file
 
-config_file_tmp=./setting.ini
-config_template=./setting_template.ini
-cp $config_template $config_file_tmp
-sed -i -e "s/#USER/$USER/g" $config_file_tmp 
-sed -i -e "s/#DATE/$DATE/g" $config_file_tmp 
+# mkdir for some tmp folders.
+gxpc e mkdir -p $extract_tmp_dir $sort_tmp_dir
 
-# mkdir.
-read_ini_script=./read_ini.sh
-source $read_ini_script
-read_ini $config_file_tmp
+# extract events from files in raw_dir.
+print_task_script="./print_task.py"
+extract_task_fn="./extract.task"
+python $print_task_script --event_extract_task --config_fn $config_file --task_fn $extract_task_fn
+echo $extract_task_fn
+gxpc js -a work_file=extract.task -a cpu_factor=0.75
 
-exp_dir=$INI__Data_Directory__exp_dir
-result_dir=$INI__Data_Directory__result_dir
-merge_dir=$INI__Data_Directory__merge_dir
-event_sid_cdbdir=$INI__Data_Directory__event_sid_cdbdir
-event_count_cdbdir=$INI__Data_Directory__event_count_cdbdir
-mkdir -p $result_dir $merge_dir $event_sid_cdbdir $event_count_cdbdir
+# merge recursively
+merge_task_file=./merge.task
+#while:
+n=0
+until [ $n -ge 10 ]
+do
+    echo depth $n
+    n=$[$n+1]
 
-knp_tmp_dir=$INI__Data_Directory__knp_tmp_dir
-sort_tmp_dir=$INI__Data_Directory__sort_tmp_dir
-gxpc e mkdir -p $knp_tmp_dir $sort_tmp_dir 
+    python ./print_task.py --merge_task --config_fn $config_file --task_fn $merge_task_file
+    if [ -s $merge_task_file ];
+    then
+        gxpc js -a work_file=merge.task -a cpu_factor=0.5
+    else 
+        echo "finished merging."
+        break
+    fi
 
-event_count_cdb=$INI__DataBase__event_count_cdb
-event_sid_cdb=$INI__DataBase__event_sid_cdb
+done
+# build db
+build_script=./build_event_db.py
+all_events_file=$result_dir/all_events.txt
 
-config_file=$INI__Scripts__config_file
-mv $config_file_tmp $config_file 
-echo config file: $config_file
+if $extract_sid;
+then
+    mkdir -p $result_dir/event_sid
+    evSID_cdb_prefix=$result_dir/event_sid/event_sid.cdb
+    python $build_script --build_event_sid_db --input_file $all_events_file --cdb_prefix $evSID_cdb_prefix
 
-###Extract events from files:
-python print_task.py --event_extract_task_file event_extract.task --config_file $config_file
-gxpc js -a work_file=event_extract.task -a cpu_factor=0.5
-rm -f event_extract.task
-echo all events extracted.
+    tmp=$all_events_file.tmp
+    awk '!($3="")' $all_events_file > $tmp && mv $tmp $all_events_file
+fi
 
-###Merge event files:
-python print_task.py --merge_task_file merge_folder.task --config_file $config_file 
-gxpc js -a work_file=merge_folder.task -a cpu_factor=0.5
-echo event files merged for all folders.
+mkdir -p $result_dir/event_count
+evCount_cdb_prefix=$result_dir/event_count/event_count.cdb
+python $build_script --build_event_count_db --input_file $all_events_file --cdb_prefix $evCount_cdb_prefix
 
-python print_task.py --merge_group_task_file merge_group.task --config_file $config_file
-gxpc js -a work_file=merge_group.task -a cpu_factor=0.5
-rm -f merge_folder.task merge_group.task
-echo event folders merged
+# sort event_count_file 
+sort --parallel=10 --temporary-directory=sort_tmp_dir -nr $all_events_file -o $all_events_file
 
-tmp_dir=/data/$USER
-all_event_file=$tmp_dir/all_sorted_$DATE.txt
-tmp_file=$tmp_dir/tmp.txt
-sort --parallel=10 --temporary-directory=$sort_tmp_dir -k2 $merge_dir/*_result_group.txt > $tmp_file
-python ./merge.py -f $tmp_file -s > $all_event_file
-echo all events merged at $all_event_file
-
-### Build event-cdbs:
-python build_event_db.py -i $all_event_file -c $event_count_cdb
-echo event-count cdb database built at $event_count_cdbdir 
-python build_event_db.py -i $all_event_file -s $event_sid_cdb
-echo event-sid cdb database built at $event_sid_cdbdir 
-
-### Get event counts file:
-all_event_sorted=$exp_dir/all_events_counts_sorted.txt
-cut -d' ' -f1,2 $all_event_file > $all_event_sorted 
-sort --parallel=10 --temporary-directory=/data/huang/tmp -nr $all_event_sorted -o $all_event_sorted
-#rm -f $all_event_file
-echo "event-count file (sorted by counts) extracted at $all_event_sorted"
-
-### delete low level files.
-#rm -rf $result_dir $merge_dir
+# delete tmp dir
+gxpc e rm -rf $extract_tmp_dir $sort_tmp_dir

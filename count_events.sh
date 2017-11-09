@@ -1,28 +1,15 @@
 #!/bin/bash
-
 NICE="nice -n 19"
 export LC_ALL=C
-base_dir1="$1"
-base_dir2="$2"
-base_dir3="$3"
-base_dir4="$4"
-which_file="$5"
-config_file="$6"
 
-# read from config file
-read_ini_script=./read_ini.sh
-source $read_ini_script
-read_ini $config_file
+file_stamp="$1"
+file_stamp_base=`basename $file_stamp`
 
-raw_dir=$INI__Data_Directory__raw_dir
-knp_tmp_dir=$INI__Data_Directory__knp_tmp_dir
-result_dir=$INI__Data_Directory__result_dir
-process_file_script=$INI__Scripts__process_knp_script
-merge_script=$INI__Scripts__merge_script
+config_file="$2"
+source $config_file
 
 # check if file exists.
-file_stamp="$base_dir1$base_dir2$base_dir3$base_dir4"_"$which_file"
-raw_file=$raw_dir/$base_dir1/$base_dir2/$base_dir3/$base_dir4/$base_dir1$base_dir2$base_dir3$base_dir4$which_file.knp.xz
+raw_file="$raw_dir/$file_stamp$raw_postfix"
 if ! [ -f $raw_file ]
 then
     echo "$raw_file not existed."
@@ -30,7 +17,7 @@ then
 fi
 
 # decompress.
-knp_file=$knp_tmp_dir/temp_$file_stamp.knp
+knp_file="$extract_tmp_dir/$file_stamp_base.knp"
 n=0
 until [ $n -ge 10000 ]
 do
@@ -40,14 +27,30 @@ do
 done
 
 # extract events from knp file.
-output_file=$result_dir/$file_stamp.txt
-result_file=$result_dir/"$file_stamp"_result.txt
+extracted_tmp_fn="$extract_tmp_dir/$file_stamp_base.unsorted"
+extracted_file="$extract_dir/$file_stamp.txt"
+extract_sub_dir=`dirname $extracted_file`
+mkdir -p $extract_sub_dir
+
+process_knp_script="./process_knp_file.py"
+merge_script="./merge.py"
+
 COUNT_THRESHOLD=2
-$NICE python $process_file_script -i $knp_file -o $output_file -s
-$NICE sort -k2 $output_file -o $output_file
-$NICE python $merge_script -t $COUNT_THRESHOLD -f $output_file -s > $result_file
+$NICE python $process_knp_script -i $knp_file -o $extracted_tmp_fn $extract_options
+echo "extratced to $extracted_tmp_fn"
+
+if $extract_sid;
+then
+    $NICE sort -k2,2 $extracted_tmp_fn -o $extracted_tmp_fn
+    echo "sorted to $extracted_tmp_fn"
+    $NICE python $merge_script -t $COUNT_THRESHOLD -f $extracted_tmp_fn -s > $extracted_file
+else
+    $NICE sort $extracted_tmp_fn | uniq -c | sed 's/^ *\([0-9]*\) /\1 /' > $extracted_file
+fi
+echo "merged to $extracted_file"
 
 # remove temp files.
 rm -f $knp_file
-rm -f $output_file
-echo "$file_stamp done"
+rm -f $extracted_tmp_fn
+echo "$file_stamp_base done"
+

@@ -10,7 +10,7 @@ PATH_DEAFAULTS = {"raw_dir": "/pear/share/www-uniq/v2006-2015.cf-preparation/knp
             }
 
 PATH_OPTS = ["result_dir", "raw_dir", "raw_postfix", "extract_tmp_dir", "extract_dir", "sort_tmp_dir"]
-EXTRACT_OPTS = [ "extract_sid", "multi_arg", "only_verb" ]
+EXTRACT_OPTS = [ "extract_sid", "multi_arg", "only_verb", "only_main_cases"]
 
 def export_config_file(options):
     output_fn = open(options.output_fn, 'w')
@@ -48,6 +48,7 @@ if __name__ == "__main__":
     extract_opts.add_argument("--extract_sid", action="store_true", dest="extract_sid")
     extract_opts.add_argument("--multi_arg", action="store_true", dest="multi_arg")
     extract_opts.add_argument("--only_verb", action="store_true", dest="only_verb")
+    extract_opts.add_argument("--only_main_cases", action="store_true", dest="only_main_cases")
 
     parser.add_argument('-o', "--output_fn", action="store", dest="output_fn")
     options = parser.parse_args() 

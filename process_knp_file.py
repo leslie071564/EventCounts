@@ -14,7 +14,7 @@ from pyknp import KNP
 knp = KNP()
 
 MainCases = [u"ガ", u"ヲ", u"ニ", u"デ"]
-
+AllCases = MainCases + [u"ト", u"カラ", u"ヨリ", u"ヘ", u"マデ", u"未"]
 
 def print_events(options):
     if not os.path.isfile(options.knp_file):
@@ -52,6 +52,8 @@ def get_sent_structure(result, only_verb=False, only_main_cases=False):
 
         case = dep_cases[0]
         if only_main_cases and case not in MainCases:
+            continue
+        elif case not in AllCases:
             continue
 
         pred = result.tag_list()[tag.parent_id]

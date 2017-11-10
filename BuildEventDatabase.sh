@@ -18,7 +18,7 @@ print_task_script="./print_task.py"
 extract_task_fn="./extract.task"
 python $print_task_script --event_extract_task --config_fn $config_file --task_fn $extract_task_fn
 echo $extract_task_fn
-gxpc js -a work_file=extract.task -a cpu_factor=0.75
+gxpc js -a work_file=extract.task -a cpu_factor=0.25
 
 # merge recursively
 merge_task_file=./merge.task
@@ -32,7 +32,7 @@ do
     python ./print_task.py --merge_task --config_fn $config_file --task_fn $merge_task_file
     if [ -s $merge_task_file ];
     then
-        gxpc js -a work_file=merge.task -a cpu_factor=0.5
+        gxpc js -a work_file=merge.task -a cpu_factor=0.25
     else 
         echo "finished merging."
         break
